@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "HuntAssist",
+  "version": "3.0.1",
+  "description": "Instant IOC lookups across VirusTotal, Shodan, AbuseIPDB & more. Analyze threats with email header parsing and Base64 tools.",
+  "permissions": [
+    "storage",
+    "contextMenus",
+    "notifications"
+  ],
+  "background": {
+    "service_worker": "src/background/background.js"
+  },
+  "action": {
+    "default_popup": "src/pages/popup.html",
+    "default_icon": {
+      "48": "src/assets/images/icon48.png",
+      "128": "src/assets/images/icon128.png"
+    }
+  },
+  "icons": {
+    "48": "src/assets/images/icon48.png",
+    "128": "src/assets/images/icon128.png"
+  }
+}

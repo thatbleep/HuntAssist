@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HuntAssist</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/popup.css">
+    <style>
+        body {
+            width: 100%;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: auto;
+        }
+        
+        .popout-header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .popout-title {
+            color: var(--accent-green);
+            font-size: 20px;
+            margin: 0;
+            display: none;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px 10px;
+            transition: color 0.2s ease;
+        }
+        
+        .close-btn:hover {
+            color: var(--accent-green);
+        }
+    </style>
+</head>
+<body>
+    <div class="tab-container">
+        <button class="tab active" data-view="history">History</button>
+        <button class="tab" data-view="search">Search</button>
+        <div class="more-menu">
+            <button class="more-btn">More ▾</button>
+            <div class="more-dropdown">
+                <button class="dropdown-item" data-view="base64">Base64</button>
+                <button class="dropdown-item" data-view="headers">Email Headers</button>
+                <button class="dropdown-item" data-view="jwt">JWT Decoder</button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" data-view="cyberchef">CyberChef</button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" data-view="info">Info</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="historyView" class="view active">
+        <div class="history-controls">
+            <button id="exportHistoryBtn" class="history-control-btn">Export History</button>
+            <button id="clearHistoryBtn" class="history-control-btn">Clear History</button>
+        </div>
+        <div class="history-filters">
+            <label class="filter-label">Filter by type:</label>
+            <div class="filter-controls">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-type="all">All</button>
+                    <button class="filter-btn" data-type="IP">IP</button>
+                    <button class="filter-btn" data-type="Domain">Domain</button>
+                    <button class="filter-btn" data-type="Hash">Hash</button>
+                    <button class="filter-btn" data-type="URL">URL</button>
+                </div>
+                <div class="show-details-toggle">
+                    <input type="checkbox" id="showDetailsToggle" checked>
+                    <label for="showDetailsToggle">Show Details</label>
+                </div>
+            </div>
+        </div>
+        <div id="historyList"></div>
+    </div>
+
+    <div id="searchView" class="view">
+        <div class="converter-container">
+            <div class="input-group">
+                <textarea id="iocInput" placeholder="Enter an IP, domain, hash, or URL to search..." rows="3"></textarea>
+            </div>
+            <div class="search-type-selector">
+                <label class="filter-label">IOC Type:</label>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-type="auto">Auto-detect</button>
+                    <button class="filter-btn" data-type="IP">IP</button>
+                    <button class="filter-btn" data-type="Domain">Domain</button>
+                    <button class="filter-btn" data-type="Hash">Hash</button>
+                    <button class="filter-btn" data-type="URL">URL</button>
+                </div>
+            </div>
+            <div class="search-source-selector">
+                <label class="filter-label">Search Source:</label>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-source="all">All Sources</button>
+                </div>
+            </div>
+            <div id="sourceButtons" class="source-buttons-container"></div>
+            <div class="button-group">
+                <button id="searchBtn" class="action-btn">Search</button>
+            </div>
+            <div id="searchResults" class="search-result" style="display: none;">
+                <div id="searchStatus"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="base64View" class="view">
+        <div class="converter-container">
+            <div class="input-group">
+                <textarea id="b64Input" placeholder="Enter text to encode/decode..." rows="4"></textarea>
+            </div>
+            <div class="button-group">
+                <button id="encodeBtn" class="action-btn">Encode</button>
+                <button id="decodeBtn" class="action-btn">Decode</button>
+            </div>
+            <div class="output-group">
+                <textarea id="b64Output" placeholder="Result will appear here..." rows="4" readonly></textarea>
+                <button id="copyBtn" class="copy-btn">Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="headersView" class="view">
+        <div class="converter-container">
+            <div class="input-group">
+                <textarea id="headerInput" placeholder="Paste raw email headers here..." rows="6"></textarea>
+            </div>
+            <div class="button-group">
+                <button id="parseHeadersBtn" class="action-btn">Parse Headers</button>
+            </div>
+            <div id="headerResults" class="header-results">
+                <div class="header-section">
+                    <h3>Key Information</h3>
+                    <div id="keyInfo" class="header-info"></div>
+                    <div id="authResults" class="header-info"></div>
+                </div>
+                <div class="header-section">
+                    <h3>Email Route</h3>
+                    <div id="emailRoute" class="header-info"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="jwtView" class="view">
+        <div class="converter-container">
+            <div class="input-group">
+                <textarea id="jwtInput" placeholder="Enter JWT token to decode..." rows="4"></textarea>
+            </div>
+            <div class="button-group">
+                <button id="decodeJwtBtn" class="action-btn">Decode</button>
+            </div>
+            <div class="output-group">
+                <h3>Header</h3>
+                <textarea id="jwtHeader" placeholder="JWT header will appear here..." rows="3" readonly></textarea>
+                <h3>Payload</h3>
+                <textarea id="jwtPayload" placeholder="JWT payload will appear here..." rows="6" readonly></textarea>
+                <button id="copyJwtBtn" class="copy-btn">Copy Payload</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="infoView" class="view">
+        <div class="info-header">
+            <img src="../assets/images/icon128.png" alt="HuntAssist Logo" class="info-logo">
+            <div class="info-title">
+                <h1>HuntAssist</h1>
+            </div>
+        </div>
+        
+        <div class="info-description">
+            <p>HuntAssist accelerates your threat intelligence workflow by eliminating context switching. Analyze indicators of compromise (IOCs) through multiple intelligence sources with a single click. The extension supports IP addresses, domains, URLs, and various hash formats, while maintaining a searchable history of your investigations. Additional utilities for encoding/decoding, header analysis, and JWT inspection make this a comprehensive tool for security analysts.</p>
+        </div>
+        
+        <div class="info-tabs">
+            <button class="info-tab active" data-info-section="features">Features</button>
+            <button class="info-tab" data-info-section="help">Help</button>
+        </div>
+        
+        <div class="info-content">
+            <div id="featuresSection" class="info-section active">
+                <div id="featureList"></div>
+            </div>
+            
+            <div id="helpSection" class="info-section">
+                <h2>How to Use HuntAssist</h2>
+                <div class="help-item">
+                    <h3>Context Menu Search</h3>
+                    <p>1. Highlight an IOC on a webpage (IP, domain, URL, hash)</p>
+                    <p>2. Right-click and select "Search with HuntAssist"</p>
+                    <p>3. Choose from the available threat intelligence sources</p>
+                </div>
+                <div class="help-item">
+                    <h3>Manual Search</h3>
+                    <p>1. Click on the "Search" tab in the extension</p>
+                    <p>2. Enter your indicator of compromise (IOC)</p>
+                    <p>3. Select the IOC type or use auto-detection</p>
+                    <p>4. Choose which sources to search or click "Search All"</p>
+                </div>
+                <div class="help-item">
+                    <h3>Email Analysis</h3>
+                    <p>1. Copy email headers from your email client</p>
+                    <p>2. Paste them into the Email Header Analysis tool</p>
+                    <p>3. View detailed routing and authentication information</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include popup.js for shared functionality -->
+    <script src="../scripts/popup.js"></script>
+    <script src="../scripts/popout.js"></script>
+</body>
+</html> 
